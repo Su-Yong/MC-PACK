@@ -4,6 +4,43 @@
  * @version v0.1.0
  */
 
+ const Button = android.widget.Button;
+ const ToggleButton = android.widget.ToggleButton;
+ const TextView = android.widget.TextView;
+ const ImageView = android.widget.ImageView;
+ const Toast = android.widget.Toast;
+ const LinearLayout = android.widget.LinearLayout;
+ const FrameLayout = android.widget.FrameLayout;
+ const PopupWindow = android.widget.PopupWindow;
+ const ScrollView = android.widget.ScrollView;
+ const HorizontalScrollView = android.widget.HorizontalScrollView;
+ const SeekBar = android.widget.SeekBar;
+ const EditText = android.widget.EditText;
+ // widget
+
+ const GONE = android.view.View.GONE;
+ const VISIBLE = android.view.View.VISIBLE;
+ const INVISIBLE = android.view.View.INVISIBLE;
+ const OnTouchListener = android.view.View.OnTouchListener;
+ const OnClickListener = android.view.View.OnClickListener;
+ const MotionEvent = android.view.MotionEvent;
+ const Gravity = android.view.Gravity;
+ const ViewGroup = android.view.ViewGroup;
+ // View
+
+ const Bitmap = android.graphics.Bitmap;
+ const Canvas = android.graphics.Canvas;
+ const Paint = android.graphics.Paint;
+ const Drawable = android.graphics.drawable.Drawaable;
+ const BitmapDrawable = android.graphics.drawable.BitmapDrawable;
+ const ColorDrawable = android.graphics.drawable.ColorDrawable;
+ const Typeface = android.graphics.Typeface;
+ const Color = android.graphics.Color;
+ const BitmapFactory = android.graphics.BitmapFactory;
+ const PorterDuffColorFilter = android.graphics.PorterDuffColorFilter;
+ const PorterDuff = android.graphics.PorterDuff;
+ // Graphics
+
 var MC = {};
 
 MC.CTX = com.mojang.minecraftpe.MainActivity.currentMainActivity.get();
@@ -14,10 +51,17 @@ MC.HEIGHT = MC.CTX.getScreenHeight();
 MC.Widget = {};
 MC.Font = {};
 MC.Util = {};
+MC.Color = {
+  WHITE: Color.parseColor("#E1E1E1"),
+  GRAY: Color.parseColor("#2C2C2C"),
+  BLACK: Color.parseColor("#000000"),
+  RED: Color.parseColor("#FF0000"),
+  YELLOW: Color.parseColor("#FFFFA1"),
+};
 
 /**
  * @author SuYong
- * @description cut from N_GuiPE by 0isback http://cafe.naver.com/minecraftdev/6056
+ * @see {@link http://cafe.naver.com/minecraftdev/6056} cut from N_GuiPE by 0isback
  */
 MC.Image = {
  spritesheet: MC.Util.getImage("images/gui/spritesheet.png"),
@@ -26,19 +70,19 @@ MC.Image = {
  GUI: MC.Util.getImage("images/gui/gui.png"),
 
  getBitmap: function(original, x, y, width, height, nx, ny, nxx, nyy, func) {
-   var bitmap = android.graphics.Bitmap.createBitmap(original, x, y, width, height);
+   var bitmap = Bitmap.createBitmap(original, x, y, width, height);
 
    try {
      func();
    } catch(err) {}
 
-   var bit = android.graphics.Bitmap.createScaledBitmap(bitmap, MC.Util.dp(width * 2), MC.Util.dp(height * 2), false);
+   var bit = Bitmap.createScaledBitmap(bitmap, MC.Util.dp(width * 2), MC.Util.dp(height * 2), false);
 
    return MC.Util.createNinePatch(bit, MC.Util.dp(nx * 2), MC.Util.dp(ny * 2), MC.Util.dp(nxx * 2), MC.Util.dp(nyy * 2));
  },
  getBitmapNoNine: function(original, x, y, width, height) {
-   var bitmap = android.graphics.Bitmap.createBitmap(original, x, y, width, height);
-   var bit = android.graphics.Bitmap.createScaledBitmap(bitmap, MC.Util.dp(width * 2), MC.Util.dp(height * 2), false);
+   var bitmap = Bitmap.createBitmap(original, x, y, width, height);
+   var bit = Bitmap.createScaledBitmap(bitmap, MC.Util.dp(width * 2), MC.Util.dp(height * 2), false);
 
    return new BitmapDrawable(bit);
  }
@@ -78,53 +122,55 @@ MC.Widget.TextView = function() {
 
   this.text = "";
   this.textSize = 1;
-  this.textColor = 0;
+  this.textColor = MC.Color.BLACK;
   this.isShadow = false;
+
+  this.imageView = null;
+  this.textBitmap = null;
 };
 MC.Widget.TextView.prototype = {
+  constructor: function() {
+    imageView = new ImageView(MC.CTX);
+  }
   /**
-   * @author SuYong
-   * @description set MC textview's text
    * @param {String} text
-   * @return {void}
    */
   setText: function(text) {
     this.text = text;
+    this.imageView.setImageBitmap(MC.Font.Convert(text, this.isShadow, textColor, this.textSize));
 
     return this;
   },
   /**
-   * @author SuYong
-   * @description set MC textview's text color
    * @param {Number} text color
-   * @return {void}
    */
   setTextColor: function(color) {
     this.textColor = color;
+    this.imageView.setImageBitmap(MC.Font.Convert(text, this.isShadow, textColor, this.textSize));
 
     return this;
   },
   /**
-   * @author SuYong
-   * @description set MC textview's text size
    * @param {Number} text size
-   * @return {void}
    */
   setTextSize: function(size) {
     this.textSize = size;
+    this.imageView.setImageBitmap(MC.Font.Convert(text, this.isShadow, textColor, this.textSize));
 
     return this;
   },
   /**
-   * @author SuYong
-   * @description set using text shadow
    * @param {boolean} use shadow
-   * @return {void}
    */
   setShadow: function(isShadow) {
     this.isShadow = isShadow;
+    this.imageView.setImageBitmap(MC.Font.Convert(text, this.isShadow, textColor, this.textSize));
 
     return this;
+  },
+
+  get: function() {
+    return this.imageView;
   }
 };
 
@@ -160,19 +206,73 @@ MC.Widget.RadioGroup = function() {
 
 // ---------------- MC.Font start ---------------
 /**
- * @author SuYong
- * @description get string ascii code
  * @param {String} string
  * @return {Number}
  */
 MC.Font.getAscii = function(str) {
    return str.charCodeAt(0);
 };
+/**
+ * @description check for all strings are english
+ * @param {String} string
+ * @return {boolean}
+ */
+MC.Font.isDefault = function(str) {
+  for(var i = 0; i < str.length; i ++) {
+    if(str.charCodeAt(i) > 127) {
+      return false;
+    }
+  }
 
-MC.Font.prototype.Convert = function(text, isShadow) {
-
+   return true;
 };
 
+MC.Font.prototype.ConvertChar = function(text, isShadow, color) {
+  var hex = parseInt(MC.Font.getAscii(text), 16).toString().toUpperCase();
+
+  var font = BitmapFactory.decodeStream(ModPE.openInputStreamFromTexturePack("resourcepacks/vanilla/font/glyph_" + hex + ".png"));
+  var bitmap;
+
+  if(isShadow) {
+    bitmap = Bitmap.createBitmap(font.getWidth() + 1, font.getHeight() + 1, Bitmap.Config.ARGB_8888);
+  } else {
+    bitmap = Bitmap.createBitmap(font.getWidth(), font.getHeight(), Bitmap.Config.ARGB_8888);
+  }
+
+  var canvas = new Canvas(bitmap);
+  var paint = new Paint();
+  paint.setColorFilter(PorterDuffColorFilter(Color.parseColor(color), PorterDuff.Mode.MULTIPLY));
+
+  if(isShadow) {
+    var shadow = new Paint();
+    shadow.setColor(MC.Color.GRAY);
+    canvas.drawBitmap(font, 1, 1, shadow);
+  }
+
+  canvas.drawBitmap(font, 0, 0, paint);
+
+  if(MC.Font.isDefault(text)) {
+    bitmap = Bitmap.createScaledBitmap(bitmap, bitmap.getWidth() * 2, bitmap.getHeight() * 2, false);
+  }
+  return bitmap;
+};
+MC.Font.prototype.Convert = function(text, isShadow, color, size) {
+  var length = text.length();
+  var bitmap = Bitmap.createBitmap(length * 34 - 1, 33, Bitmap.Config.ARGB_8888);
+  var canvas = new Canvas(bitmap);
+  var num = 0;
+
+  for each(var i in text.split("")) {
+    canvas.drawBitmap(MC.Font.ConvertChar(i, isShadow, color), num, 0, paint);
+    num += 34;
+  }
+
+  if(!!size) {
+    return Bitmap.createScaledBitmap(bitmap, MC.Util.dp(bitmap.getWidth() * 2), MC.Util.dp(bitmap.getHeight() * 2), false);
+  } else {
+    return Bitmap.createScaledBitmap(bitmap, MC.Util.dp(bitmap.getWidth() * 2 * size), MC.Util.dp(bitmap.getHeight() * 2 * size), false);
+  }
+};
 // ---------------- MC.Util start ---------------
 
 MC.Util.CacheManager = function() {
@@ -180,24 +280,21 @@ MC.Util.CacheManager = function() {
 };
 
 /**
- * @author SuYong
- * @description get minecraft image in resourcepack
  * @param {String} image's path
- * @return {android.graphics.Bitmap}
+ * @return {Bitmap}
  */
 MC.Util.getImage = function(path) {
-   return android.graphics.BitmapFactory.decodeStream(ModPE.openInputStreamFromTexturePack(path));
+   return BitmapFactory.decodeStream(ModPE.openInputStreamFromTexturePack(path));
 };
 
 /**
  * @author Affogatoman
- * @description create ninepatch image
- * @param {android.graphics.Bitmap} original image
+ * @param {Bitmap} original image
  * @param {Number} x coordinate
  * @param {Number} y coordinate
  * @param {Number} second x coordinate
  * @param {Number} second y coordinate
- * @return {android.graphics.drawable.NinePatchDrawable}
+ * @return {NinePatchDrawable}
  */
 MC.Util.createNinePatch = function(bitmap, x, y, xx, yy) {
     var NO_COLOR = 0x00000001;
@@ -228,17 +325,15 @@ MC.Util.createNinePatch = function(bitmap, x, y, xx, yy) {
     buffer.putInt(NO_COLOR);
     buffer.putInt(NO_COLOR);
 
-    var drawable = new android.graphics.drawable.NinePatchDrawable(MC.CTX.getResources(), bitmap, buffer.array(), new android.graphics.Rect(), null);
+    var drawable = new NinePatchDrawable(MC.CTX.getResources(), bitmap, buffer.array(), new Rect(), null);
 
     return drawable;
 };
 
 /**
- * @author SuYong
  * @description copy parent's method and field to child
  * @param {Object} child object
  * @param {Object} parent object
- * @return {void}
  */
 MC.Util.Implements = function(child, parent) {
   var child_class = eval(child);
@@ -253,8 +348,6 @@ MC.Util.Implements = function(child, parent) {
 }
 
 /**
- * @author Unknown
- * @description dip to pixel
  * @param {Number} dip value
  * @return {Number} pixel value
  */
